@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="appathon-frontend">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!-- ----------------------------  BOOTSTRAP files  --------------------------- -->
+    <script src="./resources/jquery.min.js"></script> <!-- add this befor bootstrap -- IMPORTANT -->
+    <link rel="stylesheet" href="./resources/bootstrap-4.1.1/css/bootstrap.min.css">
+    <script src="./resources/bootstrap-4.1.1/js/bootstrap.min.js"></script>
+
+    <!-- ----------------------------  CUSTOM CSS  --------------------------- -->
+    <link rel="stylesheet" href="./resources/css/custom.css">
+
+
+    <title>Document</title>
+
+    <script src="./resources/angular.js"></script>
+    <!-- <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.7.2/angular-route.js"></script> -->
+    <script src="./resources/ng-route.js"></script>
+
+    <script src="./app.js"></script>
+
+
+</head>
+
+<body ng-controller="main_ctrl as main">
+
+
+    <div class="container" ng-hide="main.error404">
+
+        <!-- A grey horizontal navbar that becomes vertical on small screens -->
+        <nav class="navbar navbar-expand-md bg-dark fixed-top navbar-dark">
+
+            <a href="#"></a> <!-- JUST KEEP ITS for adjustment -->
+            <a class="navbar-brand " href="#!" style="position: fixed;  height: 80px; width: 60px;">
+                <img src="/images/bitcoin_logo.png" alt="Logo" style="width:90px; margin-top: 0px; border: 0px solid red; position: fixed">
+            </a>
+
+            <!-- <a class="navbar-brand .d-md-none .d-lg-block " href="/" >
+            <img src="/images/bitcoin_logo.png" alt="Logo" style="width:30px;">
+        </a> -->
+
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+
+
+            <!-- Links -->
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+                <!-- ie if user is logged in  -->
+                <ul ng-show="main.buyer_loged_in || main.dealer_loged_in" class="navbar-nav mr-auto">
+
+
+                    <li ng-show="main.buyer_loged_in" class="nav-item" style=" margin-left: 90px;">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+
+
+                    <li ng-show="main.dealer_loged_in" class="nav-item" style=" margin-left: 90px;">
+                        <a class="nav-link" href="/" style="border: 1px dotted white;">Dashboard</a>
+                    </li>
+
+
+
+                    <li class="nav-item" style=" margin-left: 90px;">
+                        <a class="nav-link" href="/">Link</a>
+                    </li>
+
+                    <li class="nav-item" style=" margin-left: 90px;">
+                        <a class="nav-link" href="#">Link 3</a>
+                    </li>
+
+                </ul>
+
+
+                <ul class="navbar-nav ml-auto">
+
+                    <!-- ie if user is NOT logged  -->
+                    <li ng-hide="main.buyer_loged_in || main.dealer_loged_in" class="nav-item" style=" margin-left: 90px;">
+                        <a class="nav-link" href="#!users/signup">
+                            <span class="" style="border-bottom: 1px dotted #ddd6c9; padding-bottom: 7px;">
+                                Sign Up
+                            </span>
+                        </a>
+                    </li>
+
+                    <li ng-hide="main.buyer_loged_in || main.dealer_loged_in" class="nav-item" style=" margin-left: 90px; margin-right: 10px;">
+
+                        <a class="nav-link" href="#!users/login">
+                            <span class="" style="border-bottom: 1px dotted #ddd6c9; padding-bottom: 7px;">
+                                Login
+                            </span>
+                        </a>
+                    </li>
+
+
+
+                    <li ng-show="main.buyer_loged_in || main.dealer_loged_in" class="nav-item" style=" margin-left: 90px; margin-right: 10px;">
+
+                        <a ng-click="main.logout()" class="nav-link" href="/">
+                            <span style="border-bottom: 1px dotted #ddd6c9; padding-bottom: 7px;">
+                                Log-out
+                            </span>
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+
+
+            <!-- =================================================================================
+            ========================================================================================== -->
+
+
+
+        </nav>
+    </div>
+
+    <div ng-view>
+    </div>
+
+</body>
+
+</html>
+
+
+<!-- ----------------------------  CUSTOM JS  --------------------------- -->
+<script src="./resources/js/custom.js"> </script>
