@@ -2,13 +2,33 @@
 // ? ------------------------------------------------------------------------------------------------------
 var baseUrl = 'http://localhost:3000';
 
+
+var rad = function (x) {
+      return x * Math.PI / 180;
+};
+
+//  p1 = [lat, lng]
+var getDistance = function (p1, p2) {
+      var R = 6378137; // Earth’s mean radius in meter
+      var dLat = rad(p2.lat - p1.lat);
+      var dLong = rad(p2.lng - p1.lng);
+      var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(rad(p1.lat)) * Math.cos(rad(p2.lat)) *
+            Math.sin(dLong / 2) * Math.sin(dLong / 2);
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      var d = R * c;
+      return d / 1000; // returns the distance in meter --> now kilometed (i changed it)
+};
+
+
+
 // ? ------------------------------------------------------------------------------------------------------
 
 var appModule = angular.module("appathon-frontend", ["ngRoute", 'ngMap'])
       .run(function ($rootScope, $window) {
 
             // * check if used logged in Or NOT   ---> INITIALLY its false (AS we are NOT USING SESSIONS)
-            $rootScope.buyer_loged_in = true; //? to check the user loged in : is BUYER or DEALER
+            $rootScope.buyer_loged_in = false; //? to check the user loged in : is BUYER or DEALER
             $rootScope.dealer_loged_in = false;
             $window.location.href = "#!/";
       });
@@ -20,10 +40,15 @@ appModule.config(['$routeProvider', function ($routeProvider) {
                   controller: 'main_ctrl',
                   templateUrl: './views/root.html',
             })
-            .when('/home', {
-                  title: 'Home',
-                  controller: 'buyer_home_ctrl',
-                  templateUrl: './views/user_pages/buyer_home.html',
+            .when('/dealers', {
+                  title: 'Dealers',
+                  controller: 'buyer_show_dealers_ctrl',
+                  templateUrl: './views/user_pages/buyer_show_dealers.html',
+            })
+            .when('/cars', {
+                  title: 'Cars',
+                  controller: 'buyer_car_ctrl',
+                  templateUrl: './views/user_pages/buyer_cars.html',
             })
             .when('/dashboard', {
                   title: 'Dashboard',
@@ -75,7 +100,7 @@ appModule.controller("main_ctrl", function ($window, $rootScope, $route) { // NO
 
       // ? if the user is loged in don't show the car LOGO to him
       if ($rs.buyer_loged_in) {
-            $window.location.href = '#!/home';
+            $window.location.href = '#!/cars';
       } else if ($rs.dealer_loged_in) {
             $window.location.href = '#!/dashboard';
       }
@@ -88,9 +113,9 @@ appModule.controller("main_ctrl", function ($window, $rootScope, $route) { // NO
       this.something = "++++++++++";
 
       this.logout = function () {
-            // console.log(" link clicked");
-            this.buyer_loged_in = false;
-            this.dealer_loged_in = false;
+            console.log(" link clicked");
+            $rootScope.buyer_loged_in = false;
+            $rootScope.dealer_loged_in = false;
       };
 });
 
@@ -103,28 +128,22 @@ appModule.controller('user_login', function ($scope, $http, $window, $rootScope)
       this.password = "000000";
       this.role = "buyer";
 
-      // $http.get("http://localhost:3000/buyer/hello")
-      //       .then(function (response) {
-      //             $scope = response.data;
-      //             console.log($scope);
-      //       });
-
       // ! accessing the parent scope
-      console.log($scope.main.something);
-      $scope.main.something = "&&&&&";
-      console.log($scope.main.something);
-      //! ------------------------------
+      // console.log($scope.main.something);
+      // $scope.main.something = "&&&&&";
+      // console.log($scope.main.something);
+      // //! ------------------------------
 
 
 
       this.send_data = function (usermail, password, role) {
 
-            let validationErrors = validate_login_credentials(usermail, password, role);
+            var validationErrors = validate_login_credentials(usermail, password, role);
             console.log(validationErrors);
             // console.log(usermail, password, role);
 
             if (validationErrors.length === 0) { //? ie if no errors do a post request to login backend
-                  let url;
+                  var url;
 
                   if (role === "buyer") {
                         url = baseUrl + "/buyer/login";
@@ -133,7 +152,7 @@ appModule.controller('user_login', function ($scope, $http, $window, $rootScope)
                   }
 
 
-                  let data = {
+                  var data = {
                         email: usermail,
                         password: password
                   };
@@ -182,7 +201,7 @@ appModule.controller('user_login', function ($scope, $http, $window, $rootScope)
 
 
       function validate_login_credentials(usermail, password, role) {
-            let ve = [];
+            var ve = [];
 
             console.log(usermail);
 
@@ -214,12 +233,12 @@ appModule.controller("user_signup", function ($http, $window) {
 
 
       this.send_data = function (username, email, password, password_2, address, role) {
-            let validationErrors = validate_signup_credentials(username, email, password, password_2, address, role);
+            var validationErrors = validate_signup_credentials(username, email, password, password_2, address, role);
 
             // console.log(validationErrors);
 
             if (validationErrors.length === 0) { //? ie if no errors do a post request to login backend
-                  let url;
+                  var url;
 
                   if (role === "buyer") {
                         url = baseUrl + "/buyer/signup";
@@ -227,7 +246,7 @@ appModule.controller("user_signup", function ($http, $window) {
                         url = baseUrl + "/dealer/signup";
                   }
 
-                  let data = {
+                  var data = {
                         username: username,
                         email: email,
                         password: password,
@@ -260,7 +279,7 @@ appModule.controller("user_signup", function ($http, $window) {
 
 
       function validate_signup_credentials(username, email, password, password_2, address, role) {
-            let ve = [];
+            var ve = [];
 
             // ? simple validation
             if (username === undefined || username === "") { // can't be empty
@@ -303,22 +322,68 @@ appModule.controller("user_signup", function ($http, $window) {
 
 
 
-appModule.controller('buyer_home_ctrl', function (NgMap, $scope, $http) {
-      var google_maps_API_Key = "AIzaSyDSCmtZj4AhNElt0AKf7h3JboQga1qXp4k";
-      $scope.googleMapsUrl = "https://maps.googleapis.com/maps/api/js?key=" + google_maps_API_Key;
 
+appModule.controller('buyer_show_dealers_ctrl', function (NgMap, $scope, $http) {
+      //! http request to get dealer locations
+
+
+      var url = baseUrl + "/data/allDealers";
+      var config = {
+            dataType: 'json',
+            'Cache-Control': 'no-cache',
+            // "Content-Type": "application/json"
+            "Content-Type": "application/x-www-form-urlencoded"
+      };
+
+      $scope.dataReady = false;
+      $scope.dealerList = [];
+      $scope.array_Records_Object = [];
+
+      var dealerCount = 0;
+      $http.get(url, config)
+            .then(function (response) {
+                  // console.log(response.data);
+                  (response.data).forEach(dealerObject => {
+                        dealerObject.visible = true;
+                        $scope.dealerList.push(dealerObject);
+
+                        if (dealerCount === response.data.length - 1) {
+                              $scope.dataReady = true; // intitially all are visible
+                              // console.log($scope.dealerList);
+                        }
+                        dealerCount++;
+                  });
+            }, function (reject) {
+                  console.log("REJECTED : NO Dealer data Fetched");
+                  console.log(reject);
+            });
+
+
+
+      $scope.showDealer = function (event, dealer) {
+            $scope.selectedDealer = dealer;
+            $scope.map.showInfoWindow('Dealer-Info', this);
+      };
+
+
+
+      // ? ==================== playing with map ====================
+      // var google_maps_API_Key = "AIzaSyDSCmtZj4AhNElt0AKf7h3JboQga1qXp4k";
+      var google_maps_API_Key = "AIzaSyAHnTFFFAs0xNflQxehDK--8yTiMqOOYVM"; //! enrichAi api key
+      $scope.googleMapsUrl = "https://maps.googleapis.com/maps/api/js?key=" + google_maps_API_Key + "&callback=initMap";
 
 
       // <!-- Center for now is lucknow -->
-      $scope.center = [26.8467, 80.9462];
-      $scope.latlng = [26.8467, 80.9462];
+      $scope.center = [25.3176, 82.9739]; // [lat, lng]
+      $scope.my_latlng = [25.3176, 82.9739];
 
 
       $scope.getpos = function (event) { // function <---- to change the marker postion by clicking on map
             var lat = event.latLng.lat();
             var lng = event.latLng.lng();
 
-            $scope.latlng = [lat, lng];
+            $scope.my_latlng = [lat, lng];
+            $scope.limit_markers_and_redraw();
       };
 
       NgMap.getMap().then(function (map) {
@@ -328,18 +393,94 @@ appModule.controller('buyer_home_ctrl', function (NgMap, $scope, $http) {
             $scope.map = map;
       });
 
+
+      //? for placing marker using the --> the search box
       $scope.placeMarker = function () {
             console.log(this.getPlace());
             var loc = this.getPlace().geometry.location;
-            $scope.latlng = [loc.lat(), loc.lng()];
+            $scope.my_latlng = [loc.lat(), loc.lng()];
             $scope.center = [loc.lat(), loc.lng()];
       };
 
 
-      //! http request to get dealer locations
-      $scope.array_Records_Object = [];
+      $scope.limit_markers_and_redraw_event = function (keyEvent) {
+            if (keyEvent.which === 13) {
+                  $scope.limit_markers_and_redraw();
+            }
+      };
 
-      var url = "http://localhost:3000/data/allDealers";
+
+      $scope.desired_distance = 200;
+      $scope.limit_markers_and_redraw = function () {
+            if ($scope.desired_distance >= 0) {
+
+                  var myLocation = {
+                        lat: $scope.my_latlng[0],
+                        lng: $scope.my_latlng[1]
+                  };
+                  var dealerCount = 0;
+
+
+                  $scope.dealerList.forEach(dealerObject => {
+                        var dealerLocation = {
+                              lat: dealerObject.address.lat,
+                              lng: dealerObject.address.long
+                        };
+
+                        var distance_in_km = getDistance(myLocation, dealerLocation);
+                        // console.log("distance_in_km", distance_in_km);
+
+                        if (distance_in_km <= $scope.desired_distance) {
+                              dealerObject.visible = true;
+                              $scope.map.markers[dealerObject._id].setMap($scope.map);
+                        } else {
+                              dealerObject.visible = false;
+                              $scope.map.markers[dealerObject._id].setMap(null);
+                        }
+
+                        dealerCount++;
+                        if (dealerCount === $scope.dealerList.length) {
+                              // termintate
+                              console.log("dealer location visibility status updated");
+                              // console.log($scope.dealerList);
+                        }
+
+
+                  });
+            } else {
+                  console.log("distance can not be < 0");
+            }
+      };
+
+
+      // -=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====
+
+
+      // $scope.showMarkers = function () {
+      //       for (var key in $scope.map.markers) {
+      //             // if(key.id == )
+      //             $scope.map.markers[key].setMap($scope.map);
+      //       }
+      // };
+
+      // $scope.hideMarkers = function () {
+      //       for (var key in $scope.map.markers) {
+      //             $scope.map.markers[key].setMap(null);
+      //       }
+      // };
+
+
+
+
+
+});
+
+
+
+appModule.controller("buyer_car_ctrl", function ($scope, $http) {
+
+      var url_get_All_companies = baseUrl + "/data/companies";
+
       var config = {
             dataType: 'json',
             'Cache-Control': 'no-cache',
@@ -347,183 +488,94 @@ appModule.controller('buyer_home_ctrl', function (NgMap, $scope, $http) {
             "Content-Type": "application/x-www-form-urlencoded"
       };
 
-      $scope.dataReady = false;
+      $scope.companyList_ready = false;
+      $scope.company_list = []; // this is to send so we can get all the cars for these companies
 
-      $http.get(url, config)
+      $http.get(url_get_All_companies, config)
             .then(function (response) {
                   console.log("RESPONSE CAME");
                   // console.log(response);
-                  $scope.array_Records_Object = response.data;
-                  $scope.dataReady = true;
+                  $scope.company_names = response.data;
+                  $scope.companyList_ready = true;
 
             }, function (reject) {
-                  console.log("REJECTED : NO Dealer data Fetched");
+                  console.log("REJECTED : NO Company name fetched");
                   console.log(reject);
             });
 
-      $scope.showDealer = function (event, dealer) {
-            $scope.selectedDealer = dealer;
-            $scope.map.showInfoWindow('Dealer-Info', this);
+      $scope.change = function (company, active) {
+            console.log("changed");
+            console.log(company);
+
+            if (active) {
+                  $scope.company_list.push(company);
+            } else {
+                  $scope.company_list.splice($scope.company_list.indexOf(company), 1);
+            }
+
+            console.log($scope.company_list);
       };
+
+
+
+      $scope.transmission = "Automatic";
+      $scope.year_model = 2010;
+      $scope.car_color = "Silver";
+
+      $scope.transmission_options = [
+            "Automatic",
+            "Manual"
+      ];
+
+      $scope.year_model_options = [
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+      ];
+
+      $scope.car_color_options = [
+            "Silver",
+            "Yellow",
+            "Grey",
+            "Metallic White",
+            "Black",
+            "Blue",
+      ];
+
+
+      $scope.change_year = function (year_model) {
+            $scope.year_model = year_model;
+            console.log($scope.year_model);
+      };
+
+      $scope.change_transmission = function (transmission) {
+            $scope.transmission = transmission;
+            console.log($scope.transmission);
+      };
+
+
+      $scope.change_color = function (car_color) {
+            $scope.car_color = car_color;
+            console.log($scope.car_color);
+      };
+
+      $scope.body_color = [
+
+      ];
+
 });
 
-
-
-
-
-appModule.controller("buyer_home_ctrl_____", function ($http) {
-
-      this.google_maps_js_API_Key = "AIzaSyDSCmtZj4AhNElt0AKf7h3JboQga1qXp4k";
-      console.log(this.google_maps_js_API_Key);
-
-      // LOADING this it will call the initMap() method
-      this.google_maps_js_API_with_my_key = "https://maps.googleapis.com/maps/api/js?key=" +
-            this.google_maps_js_API_Key + "&callback=initMap";
-
-
-
-
-      //! http request to get dealer locations
-      // this.array_Records_Object = [];
-      var array_Records_Object = [];
-
-      var url = "http://localhost:3000/data/allDealers";
-      var config = {
-            dataType: 'json',
-            "Content-Type": "application/json"
-      };
-
-      $http.get(url, config)
-            .then(function (response) {
-                  console.log(response);
-                  array_Records_Object = response.data;
-
-            }, function (reject) {
-                  console.log("REJECTED : NO Dealer data Fetched");
-                  console.log(reject);
-            });
-
-
-
-
-      // var array_Records_Object = JSON.parse('<%- array_Records_Object %>'); // catching rendered records
-      // console.log(array_Records_Object);
-
-      var center_location = { // ! user's location using GPS HARD-CODED
-            lat: 28.7041,
-            lng: 77.1025
-      };
-
-
-      var delear_markers_list = [];
-
-
-
-      var map;
-
-      function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                  center: center_location,
-                  zoom: 1,
-                  gestureHandling: 'cooperative',
-
-            });
-
-            add_markers(map);
-            // console.log(delear_markers_list);
-      }
-
-
-      function add_markers(map) {
-
-            array_Records_Object.forEach(cur_record => {
-                  console.log(cur_record);
-
-                  // CREATE Dealer_MARKER : object --> to put in the   dealer_markers_list ARRAY,  & plot on map
-                  var dealer_marker = {
-                        marker_reference: undefined, // NEEDED to attach listner for info window
-                        dealer_name: cur_record.name,
-                        marker_location: {
-                              lat: cur_record.address.lat, // DELHI
-                              lng: cur_record.address.long
-                        }
-                  };
-
-                  delear_markers_list.push(dealer_marker); // ADDING to the  LIST
-                  // console.log(dealer_marker);
-
-
-                  dealer_marker.marker_reference = new google.maps.Marker({ //  create A MARKER
-                        map: map,
-                        position: dealer_marker.marker_location,
-                        draggable: false,
-                        animation: google.maps.Animation.DROP,
-                        title: dealer_marker.dealer_name
-                  });
-
-                  var infoWindow = new google.maps.InfoWindow({ // create info window
-                        content: `<h4>${dealer_marker.dealer_name}</h4>
-                           <a href="#">more deals</a>`
-                  });
-
-                  dealer_marker.marker_reference.addListener('click', function () { // add listner current MARKER
-                        infoWindow.open(map, dealer_marker.marker_reference);
-                  });
-            });
-      }
-
-
-      // ! ------------------------     loading the script ------------------------
-
-      loadScript("google_maps_js_API_with_my_key", this.google_maps_js_API_with_my_key, false); // NOT a critical script
-      console.log(this.google_maps_js_API_with_my_key);
-
-
-
-
-
-
-      function loadScript(script_name, url, is_critical_script, callback) {
-            var kill_time = 4000;
-
-            var script = document.createElement("script");
-            script.type = "text/javascript";
-            script.src = url;
-            document.getElementsByTagName("head")[0].appendChild(script);
-
-            script.onload = function () {
-                  console.log(script_name + " : script is loaded SUCCESSFULLY");
-                  window.clearTimeout(timeOut_id);
-            };
-
-            script.onerror = function () {
-                  var message = script_name + " : script NOT loaded     ERROR  --CONNECTION PROBLEM-- ";
-                  alert(message);
-                  window.clearTimeout(timeOut_id);
-                  if (is_critical_script)
-                        throw new Error(message);
-            };
-
-            // if the script can't be loaded
-            var timeOut_id = window.setTimeout(() => {
-                  var message = script_name + " : script NOT loaded     ERROR  --CONNECTION PROBLEM-- ";
-                  alert(message);
-
-                  if (is_critical_script)
-                        throw new Error(message);
-            }, kill_time);
-
-
-      }
-
-
-
-});
 
 appModule.controller("dealer_home_ctrl", function () {
 
 });
-
 
 
 

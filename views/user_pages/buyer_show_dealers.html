@@ -1,6 +1,6 @@
 <style>
     /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
+           * element that contains the map. */
     #map {
         float: right;
         height: 90%;
@@ -93,7 +93,7 @@
 </style>
 
 
-<div ng-if="dataReady" class="container" ng-controller="buyer_home_ctrl">
+<div ng-if="dataReady" class="container" ng-controller="buyer_show_dealers_ctrl">
 
 
 
@@ -106,14 +106,24 @@
 
         <input places-auto-complete types="['geocode']" on-place-changed="placeMarker()" style="width: 25%; background-color: darkgray;" />
 
+        <span style="margin-left: 140px;">
+            Dealers within :
+            <input ng-model="desired_distance" ng-keypress="limit_markers_and_redraw_event($event)" type="text" style=" background-color: darkgray; width: 45px;"
+                /> km
+            <!-- <a href="" ng-click="limit_markers_and_redraw()" class="stylish_yello_link">></a> -->
+        </span>
+
 
         <!-- on-click="getpos($event)"   -> DISABLING the functionality to change location by clicking on map  ie. YOU NEED TO DRAG -->
         <ng-map scrollwheel="false" center="{{center}}" zoom="8" default-style="false" style="height: 600px; width: 100%; display:block;">
 
             <!-- MAIN MARKER -->
-            <marker position="{{latlng}}" on-dragend="getpos($event)" animation="Animation.BOUNCE" animation="DROP"
+            <marker position="{{my_latlng}}" on-dragend="getpos($event)" animation="Animation.BOUNCE" animation="DROP"
                 draggable="true">
             </marker>
+
+            <shape id="circle" name="circle" centered="true" stroke-color='#FF0000' stroke-opacity="0.8" stroke-weight="2"
+                center="{{my_latlng}}" radius="{{desired_distance *1000 }}" editable="false"></shape>
 
             <!-- ============================================================ -->
 
@@ -134,15 +144,16 @@
                 </div>
             </info-window>
 
-            <marker ng-repeat="d in array_Records_Object" position="{{d.address.lat }} , {{d.address.long}}" title="{{d.name}}"
+
+            <marker ng-repeat="d in dealerList" position="{{d.address.lat }} , {{d.address.long}}" title="{{d.name}}"
                 id="{{d._id}}" on-click="showDealer(event, d )">
             </marker>
 
 
         </ng-map>
 
-        <b> lat : <span style="color:green"> {{latlng[0]}}</span> </b> &nbsp;&nbsp;&nbsp;
-        <b> lng : <span style="color:green"> {{latlng[1]}}</span> </b> <br>
+        <b> lat : <span style="color:green"> {{my_latlng[0]}}</span> </b> &nbsp;&nbsp;&nbsp;
+        <b> lng : <span style="color:green"> {{my_latlng[1]}}</span> </b> <br>
 
         <!-- {{selectedDealer}} -->
 
@@ -154,41 +165,14 @@
 
 
         <!--  LIST VIEW OF all the dealsers-->
-        <!-- <div>
-            <div ng-repeat="d in array_Records_Object" style="border: 0px solid red"> -->
-        <!-- <div>
-                    <h4>{{d.name}}</h4>
-                    <strong> Dealer's address : __nil__ </strong> <br>
-                    <p>
-                        <strong> Rating : <b style="color: blue">{{d.rating}}</b></strong> <br>
-
-                        <strong> No. of people rated : <b style="color: blue">
-                                {{d.no_of_people_rated}} </b> </strong> <br>
-
-                        <strong>Email: <b style="color: green">{{d.email}} </b></strong>
-                    </p>
-
-                </div> -->
-
-        <!-- {{d}} -->
-
-        <!-- <br>
-                <hr>
-
-
-            </div>
-        </div> -->
-
-
-
 
         <div class="row">
 
-            <div class="col-md-4" ng-repeat="d in array_Records_Object">
+            <div class="col-md-4" ng-show="d.visible" ng-repeat="d in dealerList">
                 <div class="card-box">
                     <div class="card-title">
                         <h2>{{d.name}}</h2>
-                        Address : __nil__  <br>
+                        Address : __nil__ <br>
                         <p>
                             Rating : <span style="color: blue">{{d.rating}}</span><br>
 

@@ -64,20 +64,37 @@
                 <ul ng-show="buyer_loged_in || dealer_loged_in" class="navbar-nav mr-auto">
 
 
+
                     <li ng-show="buyer_loged_in" class="nav-item" style=" margin-left: 90px;">
-                        <a class="nav-link" href="/">Home</a>
+                        <a class="nav-link" href="#!/cars">Cars</a>
                     </li>
-
-
+                    <!-- -------------------------------------------------------------------- -->
                     <li ng-show="dealer_loged_in" class="nav-item" style=" margin-left: 90px;">
-                        <a class="nav-link" href="/" style="border: 1px dotted white;">Dashboard</a>
+                        <a class="nav-link" href="/" >
+                            <span style="border-bottom: 1px dotted #ddd6c9; padding-bottom: 7px;">
+                                Add Car
+                            </span>
+                        </a>
                     </li>
 
 
 
-                    <li class="nav-item" style=" margin-left: 90px;">
-                        <a class="nav-link" href="/">Link</a>
+                    <li ng-show="buyer_loged_in" class="nav-item" style="margin-left: 90px;">
+                        <a class="nav-link" href="#!/dealers">
+                            Dealers
+                        </a>
                     </li>
+                    <!-- -------------------------------------------------------------------- -->
+                    <li ng-show="dealer_loged_in" class="nav-item" style=" margin-left: 90px;">
+                        <a class="nav-link" href="/" >
+                            <span style="border-bottom: 1px dotted #ddd6c9; padding-bottom: 7px;">
+                                Dashboard
+                            </span>
+                        </a>
+                    </li>
+
+
+
 
                     <li class="nav-item" style=" margin-left: 90px;">
                         <a class="nav-link" href="#" ng-click="re_render()">Re-Render 3</a>
@@ -97,8 +114,7 @@
                         </a>
                     </li>
 
-                    <li ng-hide="buyer_loged_in || dealer_loged_in" class="nav-item" style=" margin-left: 90px; margin-right: 10px;">
-
+                    <li ng-hide="buyer_loged_in || dealer_loged_in" class="nav-item" style="margin-left: 90px; margin-right:10px;">
                         <a class="nav-link" href="#!users/login">
                             <span class="" style="border-bottom: 1px dotted #ddd6c9; padding-bottom: 7px;">
                                 Login
@@ -108,9 +124,8 @@
 
 
 
-                    <li ng-show="buyer_loged_in || dealer_loged_in" class="nav-item" style=" margin-left: 90px; margin-right: 10px;">
-
-                        <a ng-click="logout()" class="nav-link" href="/">
+                    <li ng-show="buyer_loged_in || dealer_loged_in" class="nav-item" style="margin-left: 90px; margin-right:10px;">
+                        <a ng-click="main.logout()" class="nav-link" href="/">
                             <span style="border-bottom: 1px dotted #ddd6c9; padding-bottom: 7px;">
                                 Log-out
                             </span>
