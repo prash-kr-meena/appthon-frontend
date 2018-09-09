@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/prashant-kr-314/appthon-frontend#readme",
   "dependencies": {
-    "http-server": "^0.11.1"
+    "http-server": "^0.11.1",
+    "ngmap": "^1.18.4"
   }
 }
