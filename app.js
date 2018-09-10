@@ -1,4 +1,5 @@
 "use strict";
+
 // ? ------------------------------------------------------------------------------------------------------
 var baseUrl = 'http://localhost:3000';
 
@@ -30,6 +31,8 @@ var appModule = angular.module("appathon-frontend", ["ngRoute", 'ngMap'])
             // * check if used logged in Or NOT   ---> INITIALLY its false (AS we are NOT USING SESSIONS)
             $rootScope.buyer_loged_in = false; //? to check the user loged in : is BUYER or DEALER
             $rootScope.dealer_loged_in = false;
+            $rootScope._id = undefined;
+            $rootScope.email = undefined;
             $window.location.href = "#!/";
       });
 
@@ -49,6 +52,16 @@ appModule.config(['$routeProvider', function ($routeProvider) {
                   title: 'Cars',
                   controller: 'buyer_car_ctrl',
                   templateUrl: './views/user_pages/buyer_cars.html',
+            })
+            .when('/inbox', {
+                  title: 'Inbox',
+                  controller: 'user_inbox', // depends on who the user is
+                  templateUrl: './views/user_pages/inbox.html',
+            })
+            .when('/outbox', {
+                  title: 'Outbox',
+                  controller: 'user_outbox', // depends on who the user is
+                  templateUrl: './views/user_pages/outbox.html',
             })
             .when('/dashboard', {
                   title: 'Dashboard',
@@ -110,13 +123,16 @@ appModule.controller("main_ctrl", function ($window, $rootScope, $route) { // NO
             $route.reload();
       };
 
-      this.something = "++++++++++";
+      // this.something = "++++++++++";
 
       this.logout = function () {
             console.log(" link clicked");
             $rootScope.buyer_loged_in = false;
             $rootScope.dealer_loged_in = false;
       };
+
+
+
 });
 
 
@@ -166,14 +182,22 @@ appModule.controller('user_login', function ($scope, $http, $window, $rootScope)
                   // console.log(url);
                   $http.post(url, data, config)
                         .then(function (response) {
-                              console.log(response); //?do something witht the response
-
+                              // console.log(response); //?do something witht the response
                               if (response.data.status === 200) {
                                     allow_user_to_log_in(role); //? show success message to user
+
+                                    //! sorry for this code
+                                    $rootScope._id = response.data.succes_msg.split("@")[0];
+                                    $rootScope.email = response.data.succes_msg.split("@")[1];
+                                    // console.log($rootScope._id);
+                                    // console.log($rootScope.email);
+                                    console.log("Successfully logged in");
+                                    console.log(response.data);
+
                               } else {
                                     // todo : show erros to the user
-                              }
 
+                              }
                         }, function (reject) {
                               console.log(reject); // ?show the exception
                         });
@@ -323,7 +347,7 @@ appModule.controller("user_signup", function ($http, $window) {
 
 
 
-appModule.controller('buyer_show_dealers_ctrl', function (NgMap, $scope, $http) {
+appModule.controller('buyer_show_dealers_ctrl', function (NgMap, $scope, $http, $rootScope) {
       //! http request to get dealer locations
 
 
@@ -410,7 +434,8 @@ appModule.controller('buyer_show_dealers_ctrl', function (NgMap, $scope, $http) 
       };
 
 
-      $scope.desired_distance = 200;
+      // $scope.desired_distance = 200;
+      $scope.desired_distance = 2;
       $scope.limit_markers_and_redraw = function () {
             if ($scope.desired_distance >= 0) {
 
@@ -452,27 +477,81 @@ appModule.controller('buyer_show_dealers_ctrl', function (NgMap, $scope, $http) 
             }
       };
 
+      // ? ==========================  send  message   ==========================
 
-      // -=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====
+      $scope.send_mail_dealer = "____________";
+      $scope.send_id_dealer = undefined;
+      $scope.send_message_dealer = "";
 
+      $scope.chosseDealer_to_connect = function (id, email) {
+            $scope.send_mail_dealer = email;
+            $scope.send_id_dealer = id;
 
-      // $scope.showMarkers = function () {
-      //       for (var key in $scope.map.markers) {
-      //             // if(key.id == )
-      //             $scope.map.markers[key].setMap($scope.map);
-      //       }
-      // };
+            console.log($scope.send_mail_dealer);
+            console.log($scope.send_id_dealer);
+      };
 
-      // $scope.hideMarkers = function () {
-      //       for (var key in $scope.map.markers) {
-      //             $scope.map.markers[key].setMap(null);
-      //       }
-      // };
-
-
-
+      $scope.send_message = function () {
+            //! validate the form
+            console.log("send message ");
 
 
+            var errors = [];
+            if ($scope.send_mail_dealer === undefined || $scope.send_mail_dealer === "____________") {
+                  errors.push("Email address should be defined");
+            }
+
+            // ? no need to check for the _id as it would be correct if the email is
+            if ($scope.send_message_dealer.length < 8) {
+                  errors.push("Message should be > 8 characters");
+            }
+
+            var reciever_id = $scope.send_id_dealer;
+
+            console.log(errors);
+            if (errors.length === 0) { // ? message can be processed
+
+                  var url_to_send_message;
+                  if ($rootScope.buyer_loged_in) { // ! buyer can send to dealer
+                        url_to_send_message = baseUrl + "/data/sendMessage/to_dealer/" + reciever_id;
+                  }
+                  if ($rootScope.dealer_loged_in) { // ! and dealer can send to buyer only
+                        url_to_send_message = baseUrl + "/data/sendMessage/to_buyer/" + reciever_id;
+                  }
+
+
+                  var post_config = {
+                        dataType: 'json',
+                        'Cache-Control': 'no-cache',
+                        // "Content-Type": "application/json",
+                        "Content-Type": "application/x-www-form-urlencoded"
+                  };
+
+                  var message_data = {
+                        date: new Date(),
+                        reciever_email: $scope.send_mail_dealer,
+                        message: $scope.send_message_dealer,
+                        sender_id: $rootScope._id, // ---> GLOBAL VARIABLE
+                        sender_email: $rootScope.email, // ---> GLOBAL VARIABLE
+
+                  };
+
+                  console.log(message_data);
+
+                  $http.post(url_to_send_message, message_data, post_config)
+                        .then(function (response) {
+                              console.log("RESPONSE CAME");
+                              if (response.status === 200) {
+                                    console.log("Message Send successfully");
+                              } else {
+                                    console.log("Message NOT Send");
+                              }
+                        }, function (reject) {
+                              console.log("REJECTED : Some Error while sending message");
+                              console.log(reject);
+                        });
+            }
+      };
 });
 
 
@@ -488,7 +567,8 @@ appModule.controller("buyer_car_ctrl", function ($scope, $http) {
             "Content-Type": "application/x-www-form-urlencoded"
       };
 
-      $scope.companyList_ready = false;
+      $scope.companyNames_ready = false;
+
       $scope.company_list = []; // this is to send so we can get all the cars for these companies
 
       $http.get(url_get_All_companies, config)
@@ -496,12 +576,14 @@ appModule.controller("buyer_car_ctrl", function ($scope, $http) {
                   console.log("RESPONSE CAME");
                   // console.log(response);
                   $scope.company_names = response.data;
-                  $scope.companyList_ready = true;
+                  $scope.companyNames_ready = true;
 
             }, function (reject) {
                   console.log("REJECTED : NO Company name fetched");
                   console.log(reject);
             });
+
+
 
       $scope.change = function (company, active) {
             console.log("changed");
@@ -518,9 +600,10 @@ appModule.controller("buyer_car_ctrl", function ($scope, $http) {
 
 
 
-      $scope.transmission = "Automatic";
-      $scope.year_model = 2010;
+      $scope.transmission = "Manual";
+      $scope.year_model = 2014;
       $scope.car_color = "Silver";
+
 
       $scope.transmission_options = [
             "Automatic",
@@ -566,9 +649,57 @@ appModule.controller("buyer_car_ctrl", function ($scope, $http) {
             console.log($scope.car_color);
       };
 
-      $scope.body_color = [
 
-      ];
+      // ! ----------------------------------------------------------------
+      $scope.getCars = function () {
+
+            var url_get_All_cars = baseUrl + "/data/cars_with_given_option";
+
+            var post_config = {
+                  dataType: 'json',
+                  'Cache-Control': 'no-cache',
+                  // "Content-Type": "application/json",
+                  "Content-Type": "application/x-www-form-urlencoded"
+            };
+
+            var post_data = {
+                  companies: $scope.company_list,
+                  transmission_type: $scope.transmission,
+                  year: $scope.year_model,
+                  color: $scope.car_color,
+                  maxPrice: $scope.slider.curValue,
+                  minPrice: $scope.slider.minValue,
+            };
+
+            $scope.carList_ready = false;
+            $scope.carList = []; // all the car list according to the options choosen
+
+            $http.post(url_get_All_cars, post_data, post_config)
+                  .then(function (matched_cars) {
+                        console.log("RESPONSE CAME");
+                        console.log(matched_cars);
+                        $scope.carList = matched_cars.data;
+                        $scope.carList_ready = true;
+
+                  }, function (reject) {
+                        console.log("REJECTED : NO cars fetched");
+                        console.log(reject);
+                  });
+      };
+
+
+      // ! -----------------------   filter on price  ----------------------
+      $scope.slider = {
+            minValue: 50000,
+            maxValue: 9999999,
+            curValue: 70000,
+            options: {
+                  floor: 0,
+                  ceil: 100,
+                  step: 1000,
+                  showTicks: true
+            }
+      };
 
 });
 
@@ -580,8 +711,79 @@ appModule.controller("dealer_home_ctrl", function () {
 
 
 
+appModule.controller("user_inbox", function ($scope, $http, $rootScope) {
+      //! http request to get all the inbox messages
+
+      console.log(_id);
+
+      var user_id = _id; // ? either buyer or dealer
+      var url;
+
+      if ($rootScope.buyer_loged_in) {
+            url = baseUrl + "/data/getAllMessage_inbox/buyer/" + user_id;
+      }
+      if ($rootScope.dealer_loged_in) {
+            url = baseUrl + "/data/getAllMessage_inbox/dealer/" + user_id;
+      }
 
 
+      var config = {
+            dataType: 'json',
+            'Cache-Control': 'no-cache',
+            "Content-Type": "application/json",
+            // "Content-Type": "application/x-www-form-urlencoded"
+      };
+
+      $scope.inbox_ready = false;
+      $scope.inboxList = [];
+
+      $http.get(url, config)
+            .then(function (response) {
+                  console.log(response.data);
+            }, function (reject) {
+                  console.log("REJECTED : NOT ABLE TO FIND THE INBOX");
+                  console.log(reject);
+            });
+
+});
+
+
+
+appModule.controller("user_outbox", function ($scope, $rootScope, $http) {
+      //! http request to get all the outbox messages
+
+      console.log(_id);
+
+      var user_id = _id; // ? either buyer or dealer
+      var url;
+
+      if ($rootScope.buyer_loged_in) {
+            url = baseUrl + "/data/getAllMessage_outbox/buyer/" + user_id;
+      }
+      if ($rootScope.dealer_loged_in) {
+            url = baseUrl + "/data/getAllMessage_outbox/dealer/" + user_id;
+      }
+
+
+      var config = {
+            dataType: 'json',
+            'Cache-Control': 'no-cache',
+            "Content-Type": "application/json",
+            // "Content-Type": "application/x-www-form-urlencoded"
+      };
+
+      $scope.outbox_ready = false;
+      $scope.outboxList = [];
+
+      $http.get(url, config)
+            .then(function (response) {
+                  console.log(response.data);
+            }, function (reject) {
+                  console.log("REJECTED : NOT ABLE TO FIND THE OUTBOX");
+                  console.log(reject);
+            });
+
+});
 
 
 

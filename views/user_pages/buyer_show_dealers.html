@@ -102,14 +102,15 @@
     <!-- {{googleMapsUrl}} -->
     <b>{{hi}}</b>
 
-    <div map-lazy-load="https://maps.google.com/maps/api/js" map-lazy-load-params="{{googleMapsUrl}}">
+    <!-- map-lazy-load-params="{{googleMapsUrl}}"  -->
+    <div map-lazy-load="https://maps.google.com/maps/api/js" map-lazy-load-params="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHnTFFFAs0xNflQxehDK--8yTiMqOOYVM">
 
         <input places-auto-complete types="['geocode']" on-place-changed="placeMarker()" style="width: 25%; background-color: darkgray;" />
 
         <span style="margin-left: 140px;">
             Dealers within :
-            <input ng-model="desired_distance" ng-keypress="limit_markers_and_redraw_event($event)" type="text" style=" background-color: darkgray; width: 45px;"
-                /> km
+            <input ng-model="desired_distance" ng-keypress="limit_markers_and_redraw_event($event)" type="text" style=" background-color: darkgray; width: 45px;" />
+            km
             <!-- <a href="" ng-click="limit_markers_and_redraw()" class="stylish_yello_link">></a> -->
         </span>
 
@@ -158,13 +159,31 @@
         <!-- {{selectedDealer}} -->
 
 
+
+        <!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+        <!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+        <br>
+        <div>
+            <span hidden> {{send_id_dealer}}</span>
+
+            <span style="font-weight: bold">To :</span> {{send_mail_dealer.split("@")[0]}}
+
+            <span style="font-weight: bold"> Message :</span>
+            <textarea ng-model="send_message_dealer" cols="80" rows="2" style="background-color:#dfd4c0; margin-left: 5px;">
+
+
+
+ </textarea>
+            <a ng-click="send_message()" href="" class="stylish_yello_link" style="margin-left: 10px;">Send</a>
+        </div>
+        <br>
+
+
+        <!-- LIST VIEW OF all the dealsers -->
         <br>
         <h1>Dealers list</h1>
         <br>
-
-
-
-        <!--  LIST VIEW OF all the dealsers-->
 
         <div class="row">
 
@@ -184,7 +203,7 @@
                         </p>
                     </div>
                     <div class="card-link">
-                        <a href="" class="c-link">See Dealer &nbsp; &nbsp; >>
+                        <a  ng-click="chosseDealer_to_connect(d._id, d.email)" href="" class="c-link">Contact Dealer &nbsp; &nbsp; >>
                             <i class="fa fa-angle-right"></i>
                         </a>
                     </div>
