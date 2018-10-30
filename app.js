@@ -33,6 +33,7 @@ var appModule = angular.module("appathon-frontend", ["ngRoute", 'ngMap'])
             $rootScope.dealer_loged_in = false;
             $rootScope._id = undefined;
             $rootScope.email = undefined;
+            $rootScope.fullemail = undefined;
             $window.location.href = "#!/";
       });
 
@@ -98,7 +99,9 @@ appModule.config(['$routeProvider', function ($routeProvider) {
             });
 }]);
 
+
 // ! ========================================================
+
 
 appModule.controller("main_ctrl", function ($window, $rootScope, $route) { // NOT doing $scope injection   --> this refers to $scope
       var $rs = $rootScope;
@@ -187,8 +190,10 @@ appModule.controller('user_login', function ($scope, $http, $window, $rootScope)
                                     allow_user_to_log_in(role); //? show success message to user
 
                                     //! sorry for this code
-                                    $rootScope._id = response.data.succes_msg.split("@")[0];
-                                    $rootScope.email = response.data.succes_msg.split("@")[1];
+                                    let splited = response.data.succes_msg.split("@");
+                                    $rootScope._id = splited[0];
+                                    $rootScope.email = splited[1];
+                                    $rootScope.fullemail = $rootScope.email + "@" + splited[2];
                                     // console.log($rootScope._id);
                                     // console.log($rootScope.email);
                                     console.log("Successfully logged in");
@@ -480,20 +485,21 @@ appModule.controller('buyer_show_dealers_ctrl', function (NgMap, $scope, $http, 
       // ? ==========================  send  message   ==========================
 
       $scope.send_mail_dealer = "____________";
-      $scope.send_id_dealer = undefined;
+      $scope.id_of_reciever = undefined;
       $scope.send_message_dealer = "";
 
       $scope.chosseDealer_to_connect = function (id, email) {
             $scope.send_mail_dealer = email;
-            $scope.send_id_dealer = id;
+            $scope.id_of_reciever = id;
 
             console.log($scope.send_mail_dealer);
-            console.log($scope.send_id_dealer);
+            console.log($scope.id_of_reciever);
       };
+
 
       $scope.send_message = function () {
             //! validate the form
-            console.log("send message ");
+            console.log("send message");
 
 
             var errors = [];
@@ -501,22 +507,22 @@ appModule.controller('buyer_show_dealers_ctrl', function (NgMap, $scope, $http, 
                   errors.push("Email address should be defined");
             }
 
-            // ? no need to check for the _id as it would be correct if the email is
+            // * no need to check for the _id as it would be correct if the email is
             if ($scope.send_message_dealer.length < 8) {
                   errors.push("Message should be > 8 characters");
             }
 
-            var reciever_id = $scope.send_id_dealer;
+            var reciever_id = $scope.id_of_reciever;
 
             console.log(errors);
             if (errors.length === 0) { // ? message can be processed
 
                   var url_to_send_message;
-                  if ($rootScope.buyer_loged_in) { // ! buyer can send to dealer
+                  if ($rootScope.buyer_loged_in) { // * buyer can send to dealer only
                         url_to_send_message = baseUrl + "/data/sendMessage/to_dealer/" + reciever_id;
                   }
-                  if ($rootScope.dealer_loged_in) { // ! and dealer can send to buyer only
-                        url_to_send_message = baseUrl + "/data/sendMessage/to_buyer/" + reciever_id;
+                  if ($rootScope.dealer_loged_in) { // * and dealer can send to buyer only
+                        url_to_send_message = baseUrl + "/data/sendMessage/to_dealer/" + reciever_id;
                   }
 
 
@@ -531,9 +537,8 @@ appModule.controller('buyer_show_dealers_ctrl', function (NgMap, $scope, $http, 
                         date: new Date(),
                         reciever_email: $scope.send_mail_dealer,
                         message: $scope.send_message_dealer,
-                        sender_id: $rootScope._id, // ---> GLOBAL VARIABLE
-                        sender_email: $rootScope.email, // ---> GLOBAL VARIABLE
-
+                        sender_id: $rootScope._id, // ---> GLOBAL VARIABLE          can be dealer or buyer
+                        sender_email: $rootScope.fullemail, // ---> GLOBAL VARIABLE
                   };
 
                   console.log(message_data);
@@ -714,9 +719,9 @@ appModule.controller("dealer_home_ctrl", function () {
 appModule.controller("user_inbox", function ($scope, $http, $rootScope) {
       //! http request to get all the inbox messages
 
-      console.log(_id);
+      console.log($rootScope._id);
 
-      var user_id = _id; // ? either buyer or dealer
+      var user_id = $rootScope._id; // * either buyer or dealer
       var url;
 
       if ($rootScope.buyer_loged_in) {
@@ -731,7 +736,6 @@ appModule.controller("user_inbox", function ($scope, $http, $rootScope) {
             dataType: 'json',
             'Cache-Control': 'no-cache',
             "Content-Type": "application/json",
-            // "Content-Type": "application/x-www-form-urlencoded"
       };
 
       $scope.inbox_ready = false;
@@ -740,6 +744,8 @@ appModule.controller("user_inbox", function ($scope, $http, $rootScope) {
       $http.get(url, config)
             .then(function (response) {
                   console.log(response.data);
+                  $scope.inbox_ready = true;
+                  $scope.inboxList = response.data;
             }, function (reject) {
                   console.log("REJECTED : NOT ABLE TO FIND THE INBOX");
                   console.log(reject);
@@ -752,9 +758,9 @@ appModule.controller("user_inbox", function ($scope, $http, $rootScope) {
 appModule.controller("user_outbox", function ($scope, $rootScope, $http) {
       //! http request to get all the outbox messages
 
-      console.log(_id);
+      console.log($rootScope._id);
 
-      var user_id = _id; // ? either buyer or dealer
+      var user_id = $rootScope._id; // ? either buyer or dealer
       var url;
 
       if ($rootScope.buyer_loged_in) {
@@ -777,7 +783,10 @@ appModule.controller("user_outbox", function ($scope, $rootScope, $http) {
 
       $http.get(url, config)
             .then(function (response) {
-                  console.log(response.data);
+                  // console.log(response.data);
+                  $scope.outbox_ready = true;
+                  $scope.outboxList = response.data;
+
             }, function (reject) {
                   console.log("REJECTED : NOT ABLE TO FIND THE OUTBOX");
                   console.log(reject);

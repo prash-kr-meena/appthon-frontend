@@ -1,9 +1,100 @@
+<style>
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .well {
+    margin-bottom: 0px;
+  }
+
+  label {
+    border: 1px solid #ccc;
+    /* padding:10px; */
+    margin: 0 0 10px;
+    display: block;
+  }
+
+  label:hover {
+    background: #eee;
+    cursor: pointer;
+  }
+
+  #company_names {
+    text-transform: capitalize;
+  }
+</style>
+
+
+
+<!-- card view -->
+<style>
+  .card-box {
+    background: #d8d0c2;
+    min-height: 300px;
+    position: relative;
+    padding: 30px 30px 20px;
+    margin-bottom: 20px;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .card-box:hover {
+    background: linear-gradient(to right, #1fa2ff17 0%, #12d8fa2b 51%, #1fa2ff36 100%);
+  }
+
+  .card-box:after {
+    display: block;
+    background: #2196F3;
+    border-top: 2px solid #2196F3;
+    content: '';
+    width: 100%;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+  }
+
+  .card-title h2 {
+    margin: 0;
+    padding-top: 5%;
+    color: #2196F3;
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    font-size: 24px;
+    line-height: 1;
+    margin-bottom: 15px;
+  }
+
+  .card-title p {
+    margin: 0;
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+
+  .card-link a {
+    text-decoration: none;
+    font-family: 'Oswald', sans-serif;
+    color: #FF5722;
+    font-size: 15px;
+  }
+</style>
+
 <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Open modal for @mdo</button>
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@fat">Open modal for @fat</button> -->
 
 
 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@getbootstrap">Open modal for @getbootstrap</button>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@getbootstrap">Open
+  modal for @getbootstrap</button>
 
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -31,5 +122,34 @@
         <button type="button" class="btn btn-primary">Send message</button>
       </div>
     </div>
+  </div>
+</div>
+
+
+
+
+<div ng-controlled="user_inbox">
+  <div class="row">
+
+    <div class="col-md-4" ng-if="outbox_ready" ng-repeat="msg in outboxList">
+      <div class="card-box">
+        <div class="card-title">
+          <span hidden> {{msg._id}}</span>
+
+          <h2><span> <span> {{msg.to}}</span> </span></h2>
+          <span> To : <span style="font-weight:bold;"> {{msg.to}}</span> </span><br>
+
+          <p>
+            <span> Time : <span style="font-weight:bold;"> {{msg.date}}</span> </span> <br>
+            <span> Message : <span style="font-weight:bold;"> {{msg.message}}</span> </span> <br>
+          </p>
+        </div>
+        <div class="card-link">
+          <a href="" class="c-link">Reply &nbsp; &nbsp; >> <i class="fa fa-angle-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>

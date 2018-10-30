@@ -1,3 +1,33 @@
+<style>
+    html,
+    body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .well {
+        margin-bottom: 0px;
+    }
+
+    label {
+        border: 1px solid #ccc;
+        /* padding:10px; */
+        margin: 0 0 10px;
+        display: block;
+    }
+
+    label:hover {
+        background: #eee;
+        cursor: pointer;
+    }
+
+    #company_names {
+        text-transform: capitalize;
+    }
+</style>
+
+
+
 <!-- card view -->
 <style>
     .card-box {
@@ -64,17 +94,17 @@
 <div ng-controlled="user_inbox">
     <div class="row">
 
-        <div class="col-md-2" ng-if="inbox_ready" ng-repeat="msg in inboxList">
+        <div class="col-md-4" ng-if="inbox_ready" ng-repeat="msg in inboxList">
             <div class="card-box">
                 <div class="card-title">
                     <span hidden> {{msg._id}}</span>
 
                     <h2><span> <span> {{msg.from}}</span> </span></h2>
-                    <span> Price : <span style="font-weight:bold;"> &#x20b9; {{msg.from}}</span> </span><br>
+                    <span> from : <span style="font-weight:bold;"> {{msg.from}}</span> </span><br>
 
                     <p>
-                        <span> Year : <span style="font-weight:bold;"> {{msg.date}}</span> </span> <br>
-                        <span> Color : <span style="font-weight:bold;"> {{msg.message}}</span> </span> <br>
+                        <span> Time : <span style="font-weight:bold;"> {{msg.date}}</span> </span> <br>
+                        <span> Message : <span style="font-weight:bold;"> {{msg.message}}</span> </span> <br>
                     </p>
                 </div>
                 <div class="card-link">
