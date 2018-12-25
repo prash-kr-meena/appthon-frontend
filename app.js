@@ -540,6 +540,7 @@ appModule.controller('buyer_show_dealers_ctrl', function (NgMap, $scope, $http, 
                         sender_id: $rootScope._id, // ---> GLOBAL VARIABLE          can be dealer or buyer
                         sender_email: $rootScope.fullemail, // ---> GLOBAL VARIABLE
                   };
+                  $scope.send_message_dealer = "";
 
                   console.log(message_data);
 
